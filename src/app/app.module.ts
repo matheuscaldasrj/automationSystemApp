@@ -8,6 +8,9 @@ import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
 import { AutomationProvider } from '../providers/automation/automation';
 import { HttpClientModule } from '@angular/common/http';
+import { FCM } from '@ionic-native/fcm';
+
+import { Push } from '@ionic-native/push';
 
 @NgModule({
   declarations: [
@@ -27,8 +30,10 @@ import { HttpClientModule } from '@angular/common/http';
   providers: [
     StatusBar,
     SplashScreen,
-    {provide: ErrorHandler, useClass: IonicErrorHandler},
-    AutomationProvider
+    AutomationProvider,
+    Push,
+    FCM,
+    {provide: ErrorHandler, useClass: IonicErrorHandler}
   ]
 })
 export class AppModule {}

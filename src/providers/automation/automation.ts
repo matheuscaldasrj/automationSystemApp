@@ -20,11 +20,19 @@ export class AutomationProvider {
     return this.http.get(this.baseURL + '/temperature');
   }
 
+  public getHumidity() {
+    return this.http.get(this.baseURL + '/humidity');
+  }
+
   public turnLight(lightNumber, lightAction) {
     return this.http.post(this.baseURL + '/light?id=' + lightNumber + "&value=" + lightAction,{});
   }
 
   public changeDoorState(doorNumber){
     return this.http.post(this.baseURL + '/door?id=' + doorNumber,{});
+  }
+
+  public setToken(userToken) {
+    return this.http.post(this.baseURL + '/setToken?token=' + userToken, {});
   }
 }

@@ -54,9 +54,23 @@
       Sensores
     </ion-title>
     <ion-item>
-      <h2>{{currentTemp}} ºC</h2>
+      <h2>{{currentTemp}} ºC - Umidade: {{currentHumidity}} %</h2>
     </ion-item>
   </ion-list>
+
+  <ion-list>
+    <ion-title>
+      Alertas
+    </ion-title>
+
+    <ion-item *ngIf="alerts.length == 0">
+      Não há nenhum alarme no momento
+    </ion-item>
+    <ion-item *ngFor="let alert of alerts">
+      {{alert}}
+    </ion-item>
+  </ion-list>
+
 
 
 </ion-content>
