@@ -1,6 +1,6 @@
 import { FCM } from '@ionic-native/fcm';
 import { Component } from '@angular/core';
-import { NavController } from 'ionic-angular';
+import { NavController, AlertController, ToastController } from 'ionic-angular';
 import { AutomationProvider } from '../../providers/automation/automation';
 
 import { Push, PushObject, PushOptions } from '@ionic-native/push';
@@ -19,9 +19,12 @@ export class HomePage {
   currentTemp;
   currentHumidity;
 
-  light1Toggle;
-  light2Toggle;
-  light3Toggle;
+  door1Toggle = false;
+  shouldShowPassDialog = true;
+
+  light1Toggle = false;
+  light2Toggle = false;
+  light3Toggle = false;
 
   allLights = {
     1: false,
@@ -43,33 +46,36 @@ export class HomePage {
     private push: Push,
     private platform: Platform,
     private fcm: FCM,
-    private zone: NgZone) {
+    private zone: NgZone,
+    private alertCtrl: AlertController,
+    private toastCtrl: ToastController) {
 
-      this.fcm.getToken().then(token=>{
-        this.automationProvider.setToken(token).subscribe  ( ()=> {
+    console.log("Inicio da aplicação");
+
+    if (this.platform.is('cordova')) {
+      this.fcm.getToken().then(token => {
+        this.automationProvider.setToken(token).subscribe(() => {
           console.log("Token foi registrado");
         })
         this.fcmToken = token;
         console.log(token);
       })
 
-      this.fcm.onTokenRefresh().subscribe(token=>{
-        this.automationProvider.setToken(token).subscribe  ( ()=> {
+      this.fcm.onTokenRefresh().subscribe(token => {
+        this.automationProvider.setToken(token).subscribe(() => {
           console.log("Token foi registrado");
         })
         this.fcmToken = token;
       })
-      
-      console.log("Inicio da aplicação");
-  
-      if (this.platform.is('cordova')) {
-        console.log("TA RODANDO NATIVO");
-        this.configNotifications();
-      } else {
-        console.log("NAAO TA RODANDO NATIVO");
-      }
-      this.getCurrentTemp();
-      this.getCurrentHumidity();
+
+      console.log("TA RODANDO NATIVO");
+      this.configNotifications();
+    } else {
+      console.log("NAAO TA RODANDO NATIVO");
+    }
+    this.getCurrentTemp();
+    this.getCurrentHumidity();
+    this.updateAlerts();
   }
 
   configNotifications() {
@@ -77,7 +83,7 @@ export class HomePage {
       .then((res: any) => {
 
         if (res.isEnabled) {
-          alert('We have permission to send push notifications');
+          console.log('We have permission to send push notifications');
           const options: PushOptions = {
             android: {
               senderID: "315240587044"
@@ -95,24 +101,28 @@ export class HomePage {
           const pushObject: PushObject = this.push.init(options);
 
           pushObject.on('notification').subscribe((notification: any) => {
-            
+
             console.log("notification");
             console.log(notification);
-            alert(notification);
-    
+
             this.zone.run(() => {
-              this.alerts.push(notification.message);;
+              var index = this.alerts.indexOf(notification.message);
+              if (index == -1) {
+                //only add if it doest exists
+                this.alerts.push(notification.message);
+              }
+
             });
-            
-           
-        
-        });
+
+
+
+          });
 
           pushObject.on('registration').subscribe((registration: any) => {
-            
+
             console.log(registration);
-            alert('Device registered')
-        
+            console.log('Device registered')
+
           });
 
           pushObject.on('error').subscribe(error => alert('Error with Push plugin'));
@@ -162,13 +172,135 @@ export class HomePage {
     });
   }
 
-  changeDoorState(doorNumber) {
-    this.automationProvider.changeDoorState(doorNumber).subscribe((res: Response) => {
+  changeDoorState(doorNumber, password) {
+    //considering we are using just one door (door1Toggle)
+    this.automationProvider.changeDoorState(doorNumber, password).subscribe((res: Response) => {
       console.log("Porta " + doorNumber + " teve seu estado alterado ");
     }, (error) => {
+      this.revertDoor1Toggle();
+      this.presentToast("Erro ao enviar comando. Verifique a senha");
       console.log("Error to change door state: " + doorNumber);
       console.log(error);
     });
+  }
+
+  deleteAlert(alert) {
+    this.confirmDeleteAlert(alert);
+  }
+
+  revertDoor1Toggle() {
+    this.shouldShowPassDialog = false;
+    if(this.door1Toggle == false) {
+      this.door1Toggle = true;
+    } else {
+      this.door1Toggle = false;
+    }
+  }
+
+  confirmDeleteAlert(alert) {
+    let alertDialog = this.alertCtrl.create({
+      title: 'Excluir alerta',
+      message: 'Você tem certeza que deseja excluir este alerta?',
+      buttons: [
+        {
+          text: 'Não',
+          role: 'cancel',
+          handler: () => {
+            console.log('Cancel clicked');
+          }
+        },
+        {
+          text: 'Sim',
+          handler: () => {
+            console.log('Ok clicked');
+            this.automationProvider.setAlertAsRead(alert).subscribe((res) => {
+              console.log("after alarm has been set as read");
+              this.updateAlerts();
+            })
+
+          }
+        }
+      ]
+    });
+    alertDialog.present();
+  }
+
+  confirmDoorPassword(doorNumber) {
+    console.log(this.door1Toggle);
+    if(this.shouldShowPassDialog == false) {
+      //prevent when we have already tried to change
+      //password was incorrected
+      //and we have change back door state
+      //because of ionChange this method will be called
+      this.shouldShowPassDialog = true;
+      return ;
+    }
+
+    //we are trying to open, password required
+    this.alertCtrl.create({
+      title: 'Senha Mestra',
+      inputs: [
+        {
+          name: 'password',
+          placeholder: 'Password',
+          type: 'password'
+        }
+      ],
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          handler: (data) => {
+            console.log('Cancel clicked');
+            this.revertDoor1Toggle();
+          }
+        },
+        {
+          text: 'Confirmar',
+          handler: (data) => {
+            console.log("ok");
+            console.log("password: " + data.password);
+            if (!data.password) {
+              this.presentToast("Senha não é valida");
+              this.door1Toggle = false;
+            } else {
+              this.changeDoorState(doorNumber, data.password);
+            }
+          }
+        }
+      ]
+    }).present().then(
+      (res) => {
+        console.log(res);
+      }, (error) => {
+        console.log(error);
+      });
+  }
+
+  presentToast(message) {
+    let toast = this.toastCtrl.create({
+      message: message,
+      duration: 3000,
+      position: 'bottom'
+    });
+
+    toast.onDidDismiss(() => {
+      console.log('Dismissed toast');
+    });
+
+    toast.present();
+  }
+
+  updateAlerts() {
+    console.log("lets update alerts...");
+    this.automationProvider.getAlerts().subscribe((res: Array<any>) => {
+      console.log(res);
+      this.alerts = [];
+      res.forEach(element => {
+        this.alerts.push(element);
+      });
+    });
+
   }
 
 

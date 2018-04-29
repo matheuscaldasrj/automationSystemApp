@@ -28,11 +28,20 @@ export class AutomationProvider {
     return this.http.post(this.baseURL + '/light?id=' + lightNumber + "&value=" + lightAction,{});
   }
 
-  public changeDoorState(doorNumber){
-    return this.http.post(this.baseURL + '/door?id=' + doorNumber,{});
+  public changeDoorState(doorNumber, password){
+    return this.http.post(this.baseURL + '/door?id=' + doorNumber + "&password=" + password,{});
   }
 
   public setToken(userToken) {
     return this.http.post(this.baseURL + '/setToken?token=' + userToken, {});
   }
+
+  public setAlertAsRead(alertMessage) {
+    return this.http.post(this.baseURL + '/deleteAlert?alertMessage=' + alertMessage, {});
+  }
+
+  public getAlerts() {
+    return this.http.get(this.baseURL + '/alerts');
+  }
+
 }
