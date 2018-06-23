@@ -10,7 +10,7 @@ import { Injectable } from '@angular/core';
 @Injectable()
 export class AutomationProvider {
 
-  baseURL = "http://192.168.0.199:9082/automation";
+  private baseURL = "http://192.168.0.199:9082/automation";
   
   constructor(private http: HttpClient) {
     console.log('Hello AutomationProvider Provider');
@@ -42,6 +42,15 @@ export class AutomationProvider {
 
   public getAlerts() {
     return this.http.get(this.baseURL + '/alerts');
+  }
+
+  public setServerAddress(serverAddress){
+    this.baseURL = serverAddress;
+    console.log("baseUrl has been set to " + this.baseURL);
+  }
+
+  public getServerAddress(){
+    return this.baseURL;
   }
 
 }

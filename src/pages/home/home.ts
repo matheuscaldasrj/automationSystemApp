@@ -58,6 +58,7 @@ export class HomePage {
           console.log("Token foi registrado");
         })
         this.fcmToken = token;
+        console.log("token: ");
         console.log(token);
       })
 
@@ -73,6 +74,12 @@ export class HomePage {
     } else {
       console.log("NAAO TA RODANDO NATIVO");
     }
+
+
+    this.initializeInfos();
+  }
+
+  initializeInfos() {
     this.getCurrentTemp();
     this.getCurrentHumidity();
     this.updateAlerts();
@@ -106,6 +113,8 @@ export class HomePage {
             console.log(notification);
 
             this.zone.run(() => {
+              console.log("A new notification has arrived");
+              console.log(notification);
               var index = this.alerts.indexOf(notification.message);
               if (index == -1) {
                 //only add if it doest exists
@@ -134,7 +143,6 @@ export class HomePage {
       });
 
   }
-
   getCurrentTemp() {
     this.automationProvider.getTemperature().subscribe((res: Response) => {
       this.currentTemp = res['value'];
@@ -190,7 +198,7 @@ export class HomePage {
 
   revertDoor1Toggle() {
     this.shouldShowPassDialog = false;
-    if(this.door1Toggle == false) {
+    if (this.door1Toggle == false) {
       this.door1Toggle = true;
     } else {
       this.door1Toggle = false;
@@ -225,15 +233,48 @@ export class HomePage {
     alertDialog.present();
   }
 
+  changeServerAddress() {
+    let currentServerAddress = this.automationProvider.getServerAddress();
+    let alert = this.alertCtrl.create({
+      title: 'Endereço do servidor',
+      inputs: [
+        {
+          placeholder: 'Endereço do servidor',
+          name: 'serverAddress',
+          value: currentServerAddress
+        }
+      ],
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          handler: data => {
+            console.log('Cancel button in server config ip prompt clicked');
+          }
+        },
+        {
+          text: 'Ok',
+          handler: data => {
+            console.log("Setting new base url: ");
+            console.log(data.serverAddress);
+            this.automationProvider.setServerAddress(data.serverAddress);
+            this.initializeInfos();
+          }
+        }
+      ]
+    });
+    alert.present();
+  }
+
   confirmDoorPassword(doorNumber) {
     console.log(this.door1Toggle);
-    if(this.shouldShowPassDialog == false) {
+    if (this.shouldShowPassDialog == false) {
       //prevent when we have already tried to change
       //password was incorrected
       //and we have change back door state
       //because of ionChange this method will be called
       this.shouldShowPassDialog = true;
-      return ;
+      return;
     }
 
     //we are trying to open, password required

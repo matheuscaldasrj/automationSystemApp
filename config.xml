@@ -87,9 +87,9 @@
     <platform name="android">
         <resource-file src="google-services.json" target="app/google-services.json" />
     </platform>
-    <engine name="android" spec="~6.4.0" />
     <allow-navigation href="http://172.17.45.1:8100" />
     <allow-navigation href="http://192.168.0.199:8100" />
     <allow-navigation href="http://192.168.56.1:8100" />
     <plugin name="cordova-plugin-fcm" spec="^2.1.2" />
+    <engine name="android" spec="^6.4.0" />
 </widget>

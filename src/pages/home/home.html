@@ -1,9 +1,12 @@
 <ion-header>
-  <ion-navbar>
+  <ion-navbar (click)="changeServerAddress()">
     <ion-title style="text-align: center;">
       <ion-icon name="home"></ion-icon>
       Automação Residencial
     </ion-title>
+    <ion-buttons end>
+       <ion-icon  name="settings"></ion-icon>
+    </ion-buttons>
   </ion-navbar>
 </ion-header>
 
@@ -54,7 +57,8 @@
       Sensores
     </ion-title>
     <ion-item>
-      <h2>{{currentTemp}} ºC - Umidade: {{currentHumidity}} %</h2>
+      <h2>Temperatura: {{currentTemp}} ºC </h2>
+      <h2>Umidade: {{currentHumidity}} % </h2>
     </ion-item>
   </ion-list>
 
@@ -73,5 +77,6 @@
   </ion-list>
 
 
+  <button ion-button full (click)="initializeInfos()" >Atualizar</button>
 
 </ion-content>
