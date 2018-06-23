@@ -1,9 +1,12 @@
 <ion-header>
-  <ion-navbar>
+  <ion-navbar (click)="changeServerAddress()">
     <ion-title style="text-align: center;">
       <ion-icon name="home"></ion-icon>
       Automação Residencial
     </ion-title>
+    <ion-buttons end>
+       <ion-icon  name="settings"></ion-icon>
+    </ion-buttons>
   </ion-navbar>
 </ion-header>
 
@@ -45,7 +48,7 @@
       <ion-label>
         <ion-icon name="lock" [color]="door1Toggle ? 'secondary' : 'danger'"></ion-icon> Porta Principal
       </ion-label>
-      <ion-toggle [(ngModel)]="door1Toggle" (ionChange)="changeDoorState(1)"></ion-toggle>
+      <ion-toggle [(ngModel)]="door1Toggle" (ionChange)="confirmDoorPassword(1)"></ion-toggle>
     </ion-item>
   </ion-list>
 
@@ -54,9 +57,26 @@
       Sensores
     </ion-title>
     <ion-item>
-      <h2>{{currentTemp}} ºC</h2>
+      <h2>Temperatura: {{currentTemp}} ºC </h2>
+      <h2>Umidade: {{currentHumidity}} % </h2>
     </ion-item>
   </ion-list>
 
+  <ion-list>
+    <ion-title>
+      Alertas
+    </ion-title>
+
+    <ion-item *ngIf="alerts.length == 0">
+      Não há nenhum alerta no momento
+    </ion-item>
+    <ion-item *ngFor="let alert of alerts">
+      {{alert}} 
+      <ion-icon (click)="deleteAlert(alert)" name="trash" item-end color="danger"></ion-icon>
+    </ion-item>
+  </ion-list>
+
+
+  <button ion-button full (click)="initializeInfos()" >Atualizar</button>
 
 </ion-content>

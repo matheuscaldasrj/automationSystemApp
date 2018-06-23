@@ -10,7 +10,7 @@ import { Injectable } from '@angular/core';
 @Injectable()
 export class AutomationProvider {
 
-  baseURL = "http://192.168.0.199:9082/automation";
+  private baseURL = "http://192.168.0.199:9082/automation";
   
   constructor(private http: HttpClient) {
     console.log('Hello AutomationProvider Provider');
@@ -20,11 +20,37 @@ export class AutomationProvider {
     return this.http.get(this.baseURL + '/temperature');
   }
 
+  public getHumidity() {
+    return this.http.get(this.baseURL + '/humidity');
+  }
+
   public turnLight(lightNumber, lightAction) {
     return this.http.post(this.baseURL + '/light?id=' + lightNumber + "&value=" + lightAction,{});
   }
 
-  public changeDoorState(doorNumber){
-    return this.http.post(this.baseURL + '/door?id=' + doorNumber,{});
+  public changeDoorState(doorNumber, password){
+    return this.http.post(this.baseURL + '/door?id=' + doorNumber + "&password=" + password,{});
   }
+
+  public setToken(userToken) {
+    return this.http.post(this.baseURL + '/setToken?token=' + userToken, {});
+  }
+
+  public setAlertAsRead(alertMessage) {
+    return this.http.post(this.baseURL + '/deleteAlert?alertMessage=' + alertMessage, {});
+  }
+
+  public getAlerts() {
+    return this.http.get(this.baseURL + '/alerts');
+  }
+
+  public setServerAddress(serverAddress){
+    this.baseURL = serverAddress;
+    console.log("baseUrl has been set to " + this.baseURL);
+  }
+
+  public getServerAddress(){
+    return this.baseURL;
+  }
+
 }
